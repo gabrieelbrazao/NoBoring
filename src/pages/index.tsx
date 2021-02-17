@@ -1,37 +1,48 @@
 import { useState } from 'react'
 import Head from 'next/head'
-import {
-  Header,
-  Container,
-  Title,
-  Description,
-  ParticipantsSlider,
-  Filters,
-  SubTitle,
-  Filter,
-  SelectTypes
-} from '../styles/pages/Home'
-import { MenuItem, Button } from '@material-ui/core'
+import { ParticipantsSlider } from '../styles/pages/Home'
+import { MenuItem, Button, Typography, Box, Select, Grid } from '@material-ui/core'
+
+type Tprops = {
+  random: boolean
+}
 
 const Home: React.FC = () => {
   const [participants, setParticipants] = useState(1)
   const [type, setTypes] = useState('education')
+  const [activity, setActivity] = useState('')
+
+  const generateActivity = async (props: Tprops) => {
+    let uri = 'http://www.boredapi.com/api/activity/'
+
+    if(!props.random) uri += `?type=${type}&participants=${participants}`
+
+    const response = await fetch(uri)
+    const newActivity = await response.json()
+
+    newActivity.activity ? setActivity(newActivity.activity) : setActivity("Nenhuma atividade encontrada")
+
+    if(props.random){
+      setParticipants(newActivity.participants)
+      setTypes(newActivity.type)
+    }
+  }
 
   return (
-    <div>
+    <Box bgcolor="background.default" height="100vh">
       <Head>
         <title>No Boring!</title>
       </Head>
 
-      <Header>
-        <Title>NoBoring!</Title>
-        <SubTitle>Descubra atividades para sair do tédio</SubTitle>
-      </Header>
+      <Grid container direction="column" style={{ height: "100%" }}>
+        <Grid container direction="column" alignItems="center" justify="center" style={{ height: '15vh' }}>
+          <Typography variant="h3">NoBoring!</Typography>
+          <Typography color="textSecondary">Descubra atividades para sair do tédio</Typography>
+        </Grid>
 
-      <Container>
-        <Filters>
-          <Filter>
-            <Description>Número de participantes</Description>
+        <Grid container justify="space-around">
+          <Grid container item direction="column" xl={3} alignItems="center" style={{ padding: "0 30px" }}>
+            <Typography variant="h5" color="textSecondary">Número de participantes</Typography>
 
             <ParticipantsSlider
               value={participants}
@@ -40,20 +51,25 @@ const Home: React.FC = () => {
               max={5}
               valueLabelDisplay="auto"
             />
-          </Filter>
+          </Grid>
 
-          <Filter>
-            <Button variant="contained" color="primary">
+          <Grid container item xl={3} alignItems="center" justify="space-around">
+            <Button variant="contained" color="primary" onClick={() => generateActivity({ random: false })}>
+              Gerar atividade
+            </Button>
+
+            <Button variant="outlined" color="primary" onClick={() => generateActivity({ random: true })}>
               Atividade aleatória
             </Button>
-          </Filter>
+          </Grid>
 
-          <Filter>
-            <Description>Tipo de atividade</Description>
+          <Grid container item direction="column" xl={3} alignItems="center" style={{ padding: 30 }}>
+            <Typography variant="h5" color="textSecondary">Tipo de atividade</Typography>
 
-            <SelectTypes
+            <Select
               onChange={event => setTypes(event.target.value as string)}
               value={type}
+              fullWidth
             >
               <MenuItem value="education">Educacional</MenuItem>
               <MenuItem value="recreational">Recreativo</MenuItem>
@@ -64,11 +80,15 @@ const Home: React.FC = () => {
               <MenuItem value="relaxation">Relaxamento</MenuItem>
               <MenuItem value="music">Musical</MenuItem>
               <MenuItem value="busywork">Trabalho</MenuItem>
-            </SelectTypes>
-          </Filter>
-        </Filters>
-      </Container>
-    </div>
+            </Select>
+          </Grid>
+        </Grid>
+
+        <Grid container item alignItems="center" justify="center" style={{ flex: 1 }}>
+          <Typography variant="h4" color="textSecondary" align="center">{activity}</Typography>
+        </Grid>
+      </Grid>
+    </Box>
   )
 }
 
