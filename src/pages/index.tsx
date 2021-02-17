@@ -13,7 +13,7 @@ const Home: React.FC = () => {
   const [activity, setActivity] = useState('')
 
   const generateActivity = async (props: Tprops) => {
-    let uri = 'http://www.boredapi.com/api/activity/'
+    let uri = 'https://www.boredapi.com/api/activity/'
 
     if(!props.random) uri += `?type=${type}&participants=${participants}`
 
